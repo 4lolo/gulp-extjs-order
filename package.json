@@ -1,0 +1,33 @@
+{
+  "name": "gulp-extjs-order",
+  "version": "0.0.1",
+  "description": "Orders extjs classes based on dependencies in a vinyl stream",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4lolo/gulp-extjs-order.git"
+  },
+  "keywords": [
+    "gulpplugin",
+    "gulp",
+    "order",
+    "extjs",
+    "file",
+    "files"
+  ],
+  "author": {
+    "name": "Krzysztof Wójcicki",
+    "email": "krzysztofwojcicki@gmail.com",
+    "url": "http://kwojcicki.pl"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "files": [
+    "index.js"
+  ],
+  "bugs": {
+    "url": "https://github.com/4lolo/gulp-extjs-order/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/4lolo/gulp-extjs-order#readme"
+}
