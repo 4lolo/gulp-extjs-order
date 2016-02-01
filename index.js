@@ -82,7 +82,7 @@ module.exports = function (options) {
 					
 					addDependencies(config.extend);
 					addDependencies(config.model);
-					addDependencies(config.dependencies);
+					addDependencies(config.requires);
 					addDependencies(config.mixins);
 				}
 			},
@@ -202,7 +202,7 @@ module.exports = function (options) {
 				}
 				return dep.length === 0;
 			};
-			
+
 		while (files.length > 0) {
 			i = 0;
 			p = 0;
@@ -235,5 +235,6 @@ module.exports = function (options) {
 		}
 		return me.emit("end");
 	};
+	
 	return through(onFile, onEnd);
 };
