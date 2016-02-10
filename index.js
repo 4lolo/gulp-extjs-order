@@ -9,6 +9,7 @@ module.exports = function (options) {
 			? (typeof options.exclude === 'function' ? options.exclude : function(t) { return options.exclude.test(t); })
 			: function(t) { return /^Ext\.(?!ux)/.test(t); },
 		files = [],
+		filesMap = {},
 		clearMocks,
 		defineMocks,
 		onEnd,
@@ -172,11 +173,14 @@ module.exports = function (options) {
 				}
 			}
 			
-			files.push({
-				file: file,
-				declarations: declarations,
-				dependencies: dependencies
-			});
+			if (!filesMap[file.path]) {
+				filesMap[file.path] = true;
+				files.push({
+					file: file,
+					declarations: declarations,
+					dependencies: dependencies
+				});
+			}
 		} catch (e) {
 			throw new Error('[' + file.path + '] ' + (e.message || e));
 		} finally {
@@ -224,11 +228,19 @@ module.exports = function (options) {
 			}
 			
 			if (p === 0) {
-				var notDefined = {};
-				files.forEach(function(f) { f.declarations.forEach(function(c) { notDefined[c] = f.dependencies.join(','); }) });
+				var notDefined = [],
+					failedFiles = [];
+					
+				files.forEach(function(f) { 
+					failedFiles.push(f.file.relative || f.file.path);
+					f.declarations.forEach(function(c) { notDefined.push(c + ': ' + f.dependencies.join(',')); })
+				});
 				
-				console.log('Reference loop detected');
-				console.log(notDefined);
+				console.log(
+					'Reference loop detected\r\n' + 
+					'\tNot loaded files:\r\n\t\t' + failedFiles.join('\r\n\t\t') + '\r\n' +
+					'\tNot defined dependencies:\r\n\t\t' + notDefined.join('\r\n\t\t')
+				);
 				
 				throw new Error('Reference loop detected');
 			}
