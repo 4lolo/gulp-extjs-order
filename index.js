@@ -1,6 +1,7 @@
 'use strict';
+require('harmonize')();
 var through = require("through");
-
+	
 module.exports = function (options) {
     var customMocks = typeof options === 'object' && options.mocks !== undefined && typeof options.mocks === 'object' 
 			? options.mocks
@@ -29,94 +30,114 @@ module.exports = function (options) {
 	
 	defineMocks = function(file, addDeclarations, addDependencies) {
 		var apply = function (target, source) {
-			var key;
-			
-			if (target === null || source === null || typeof target !== 'object' || typeof source !== 'object') {
-				return;
-			}
-			
-			for (key in source) {
-				if (source.hasOwnProperty(key)) {
-					if (target[key] === undefined) {
-						target[key] = source[key];
-					} else {
-						apply(target[key], source[key]);
-					}
-				}
-			}
-		};
-		
-		GLOBAL.Ext = {
-			// Mocks
-			Function: {
-				alias: function () {},
-				bind: function () {},
-				clone: function () {},
-				createBuffered: function () {},
-				createDelayed: function () {},
-				createInterceptor: function () {},
-				createSequence: function () {},
-				createThrottled: function () {},
-				defer: function () {},
-				flexSetter: function () {},
-				interceptAfter: function () {},
-				interceptBefore: function () {},
-				pass: function () {}
-			},
-			supports: {},
-			Template: function () {},
-			XTemplate: function () {},
-			
-			// Methods to handle class definitions
-			
-			// Ext.apply - we do not support apply
-			apply: function() {
-				throw new Error("Not supported");
-			},
-			
-			// Ext.define - define class
-			define: function (className, config) {
-				addDeclarations(className);
+				var key;
 				
-				if (config !== null) {
-					addDeclarations(config.alternateClassName);
-					
-					addDependencies(config.extend);
-					addDependencies(config.model);
-					addDependencies(config.requires);
-					addDependencies(config.mixins);
+				if (target === null || source === null || typeof target !== 'object' || typeof source !== 'object') {
+					return;
 				}
-			},
-			
-			// Ext.ns - define namespace
-			ns: function (ns) {
-				if (typeof ns === 'string') {
-					ns = [ ns ];
-				}
-				ns.forEach(function(c) {
-					var parts = c.split('.'),
-						scope = GLOBAL,
-						i;
-						
-					for (i = 0; i < parts.length; ++i) {
-						if (!scope[parts[i]]) {
-							scope[parts[i]] = {};
+				
+				for (key in source) {
+					if (source.hasOwnProperty(key)) {
+						if (target[key] === undefined) {
+							target[key] = source[key];
+						} else {
+							apply(target[key], source[key]);
 						}
-						scope = scope[parts[i]];
 					}
-				})
+				}
+			},
+			ext = {
+				// Mocks
+				Function: {
+					alias: function () {},
+					bind: function () {},
+					clone: function () {},
+					createBuffered: function () {},
+					createDelayed: function () {},
+					createInterceptor: function () {},
+					createSequence: function () {},
+					createThrottled: function () {},
+					defer: function () {},
+					flexSetter: function () {},
+					interceptAfter: function () {},
+					interceptBefore: function () {},
+					pass: function () {}
+				},
+				supports: {},
+				Template: function () {},
+				XTemplate: function () {},
+				
+				// Methods to handle class definitions
+				
+				// Ext.apply - we do not support apply
+				apply: function() {
+					throw new Error("Not supported");
+				},
+				
+				// Ext.define - define class
+				define: function (className, config) {
+					addDeclarations(className);
+					
+					if (config !== null) {
+						addDeclarations(config.alternateClassName);
+						
+						addDependencies(config.extend);
+						addDependencies(config.model);
+						addDependencies(config.requires);
+						addDependencies(config.mixins);
+					}
+				},
+				
+				// Ext.ns - define namespace
+				ns: function (ns) {
+					if (typeof ns === 'string') {
+						ns = [ ns ];
+					}
+					ns.forEach(function(c) {
+						var parts = c.split('.'),
+							scope = GLOBAL,
+							i;
+							
+						for (i = 0; i < parts.length; ++i) {
+							if (!scope[parts[i]]) {
+								scope[parts[i]] = {};
+							}
+							scope = scope[parts[i]];
+						}
+					})
+				},
+				
+				// Ext.override - we do not support override
+				override: function () {
+					throw new Error("Not supported");
+				},
+				
+				// Ext.require - add dependencies
+				require: function (classes) {
+					addDependencies(classes);
+				},
+				
+				// custom namespace, no proxy here
+				ux: {}
 			},
 			
-			// Ext.override - we do not support override
-			override: function () {
-				throw new Error("Not supported");
-			},
-			
-			// Ext.require - add dependencies
-			require: function (classes) {
-				addDependencies(classes);
-			}
-		};
+			getNsHandler = function (target) {
+				return {
+					get: function (proxy, name) {
+						if (!(name in target)) {
+							target[name] = name.toLowerCase() === name ? Proxy.create(getNsHandler({})) : {};
+						}
+						
+						return target[name];
+					},
+					set: function (proxy, key, value) {
+						target[key] = value;
+						return true;
+					}
+				};
+			};
+		
+		GLOBAL.Ext = Proxy.create(getNsHandler(ext));
 		
 		apply(GLOBAL, customMocks);
 	};
@@ -230,9 +251,9 @@ module.exports = function (options) {
 			if (p === 0) {
 				var notDefined = [],
 					failedFiles = [];
-					
+					console.log(files[0].relative);
 				files.forEach(function(f) { 
-					failedFiles.push(f.file.relative || f.file.path);
+					failedFiles.push(f.file.relative);
 					f.declarations.forEach(function(c) { notDefined.push(c + ': ' + f.dependencies.join(',')); })
 				});
 				

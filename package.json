@@ -1,6 +1,6 @@
 {
   "name": "gulp-extjs-order",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Orders extjs classes based on dependencies in a vinyl stream",
   "repository": {
     "type": "git",
@@ -29,5 +29,8 @@
     "url": "https://github.com/4lolo/gulp-extjs-order/issues"
   },
   "license": "MIT",
-  "homepage": "https://github.com/4lolo/gulp-extjs-order#readme"
+  "homepage": "https://github.com/4lolo/gulp-extjs-order#readme",
+  "dependencies": {
+    "harmonize": "^1.4.4"
+  }
 }
