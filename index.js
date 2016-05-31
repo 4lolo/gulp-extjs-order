@@ -19,11 +19,11 @@ module.exports = function (options) {
 	clearMocks = function(file) {
 		var key;
 		
-		delete GLOBAL.Ext;
+		delete global.Ext;
 		
 		if (customMocks !== null) {
 			for (key in customMocks) {
-				delete GLOBAL[key];
+				delete global[key];
 			}
 		}
 	};
@@ -45,6 +45,9 @@ module.exports = function (options) {
 						}
 					}
 				}
+			},
+			getProxy = function (target, callback) {
+				return Proxy.create ? Proxy.create(callback(target)) : new Proxy(target, callback(target));
 			},
 			ext = {
 				// Mocks
@@ -95,7 +98,7 @@ module.exports = function (options) {
 					}
 					ns.forEach(function(c) {
 						var parts = c.split('.'),
-							scope = GLOBAL,
+							scope = global,
 							i;
 							
 						for (i = 0; i < parts.length; ++i) {
@@ -125,7 +128,7 @@ module.exports = function (options) {
 				return {
 					get: function (proxy, name) {
 						if (!(name in target)) {
-							target[name] = name.toLowerCase() === name ? Proxy.create(getNsHandler({})) : {};
+							target[name] = name.toLowerCase() === name ? getProxy({}, getNsHandler) : {};
 						}
 						
 						return target[name];
@@ -137,9 +140,9 @@ module.exports = function (options) {
 				};
 			};
 		
-		GLOBAL.Ext = Proxy.create(getNsHandler(ext));
+		global.Ext = getProxy(ext, getNsHandler);
 		
-		apply(GLOBAL, customMocks);
+		apply(global, customMocks);
 	};
 	
 	onFile = function(file) {
