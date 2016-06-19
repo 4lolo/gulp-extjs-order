@@ -74,7 +74,7 @@ module.exports = function (options) {
 				
 				// Ext.apply - we do not support apply
 				apply: function() {
-					throw new Error("Not supported");
+					// Do nothing
 				},
 				
 				// Ext.define - define class
