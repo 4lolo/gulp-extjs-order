@@ -116,8 +116,11 @@ module.exports = function (options) {
 				},
 				
 				// Ext.require - add dependencies
-				require: function (classes) {
+				require: function (classes, callback) {
 					addDependencies(classes);
+					if (callback) {
+						callback();
+					}
 				},
 				
 				// custom namespace, no proxy here
@@ -208,6 +211,7 @@ module.exports = function (options) {
 		} catch (e) {
 			throw new Error('[' + file.path + '] ' + (e.message || e));
 		} finally {
+			delete require.cache[require.resolve(file.path)];
 			clearMocks(file);
 		}
 	};
@@ -253,20 +257,22 @@ module.exports = function (options) {
 			
 			if (p === 0) {
 				var notDefined = [],
-					failedFiles = [];
-					console.log(files[0].relative);
+					failedFiles = [],
+					msg;
+				
+				console.log(files[0].relative);
 				files.forEach(function(f) { 
 					failedFiles.push(f.file.relative);
 					f.declarations.forEach(function(c) { notDefined.push(c + ': ' + f.dependencies.join(',')); })
 				});
 				
-				console.log(
-					'Reference loop detected\r\n' + 
+				msg = 'Reference loop detected\r\n' + 
 					'\tNot loaded files:\r\n\t\t' + failedFiles.join('\r\n\t\t') + '\r\n' +
-					'\tNot defined dependencies:\r\n\t\t' + notDefined.join('\r\n\t\t')
-				);
+					'\tNot defined dependencies:\r\n\t\t' + notDefined.join('\r\n\t\t');
 				
-				throw new Error('Reference loop detected');
+				console.log(msg);
+				
+				throw new Error(msg);
 			}
 		}
 		return me.emit("end");
