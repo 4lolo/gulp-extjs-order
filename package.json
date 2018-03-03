@@ -1,6 +1,6 @@
 {
   "name": "gulp-extjs-order",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Orders extjs classes based on dependencies in a vinyl stream",
   "repository": {
     "type": "git",
