@@ -92,6 +92,8 @@ module.exports = function (options) {
                     }
                 },
                 
+                each: function () {},
+                
                 // Ext.ns - define namespace
                 ns: function (ns) {
                     if (typeof ns === 'string') {
@@ -125,7 +127,11 @@ module.exports = function (options) {
                 },
                 
                 // custom namespace, no proxy here
-                ux: {}
+                ux: {},
+                
+                Object: {
+                    each: function () {}
+                }
             },
             
             getNsHandler = function (target) {
