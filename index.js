@@ -10,6 +10,7 @@ module.exports = function (options) {
             ? (typeof options.exclude === 'function' ? options.exclude : function(t) { return options.exclude.test(t); })
             : function(t) { return /^Ext\.(?!ux)/.test(t); },
         definedClasses = Array.isArray(options.definedClasses) ? options.definedClasses : [],
+        isDefined = typeof options === 'object' && typeof options.isDefined === 'function' ? options.isDefined : function() { return false; },
         files = [],
         filesMap = {},
         clearMocks,
@@ -75,7 +76,7 @@ module.exports = function (options) {
                 
                 // Ext.apply - we do not support apply
                 apply: function() {
-                    // Do nothing
+                    return {};
                 },
                 
                 // Ext.define - define class
@@ -234,10 +235,10 @@ module.exports = function (options) {
             
             checkDependencies = function(f) {
                 var dep = f.dependencies,
-                    i = dep.length;
+                    i = dep.length - 1;
                     
                 for (; i >= 0; --i) {
-                    if (defined[dep[i]]) {
+                    if (defined[dep[i]] || isDefined(dep[i])) {
                         dep.splice(i, 1);
                     }
                 }
